@@ -3,6 +3,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const request = require("request");
+const https = require("https");
 
 const app = express();
 
@@ -19,13 +20,47 @@ app.get("/", function(req, res) {
 
 //using "/" is telling it to target the home route.
 app.post("/", function(req, res) {
-  var firstName = req.body.fName;
-  var lastName = req.body.lName;
-  var email = req.body.email;
+  const firstName = req.body.fName;
+  const lastName = req.body.lName;
+  const email = req.body.email;
 
-  console.log(firstName, lastName, email);
+  var data = {
+    members: [
+      {
+        email_address: email,
+        status: "subscribed",
+        merge_fields: {
+          FNAME: firstName,
+          LNAME: lastName
+        }
+      }
+    ]
+  };
+
+  const jsonData = JSON.stringify(data);
+
+  const url = "https://us9.api.mailchimp.com/3.0/lists/0b92257e4c";
+
+  const options = {
+    method: "POST",
+    auth: "sam1:ffe79e9c1fbc0a0b0406edd8144526a4-us9"
+  }
+
+  const request = https.request(url, options, function(response) {
+    response.on("data", function(data) {
+      console.log(JSON.parse(data));
+    })
+  })
+
+  request.write(jsonData);
+  request.end();
+
 });
 
 app.listen(3000, function() {
   console.log("server is running on port 3000");
 });
+
+//ffe79e9c1fbc0a0b0406edd8144526a4 - us9;
+
+//0b92257e4c
